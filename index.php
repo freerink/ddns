@@ -1,3 +1,8 @@
+<html>
+	<head>
+		<title>DDNS</title>
+	</head>
+	<body>
 <?php
 define("DB_USER", "2737ddns");
 define("DB_PASSWD", "dmjnw3ten");
@@ -51,6 +56,31 @@ if( isset($_GET['time']) && isset($_GET['hash']) ) {
 		echo "Not authorised\n";
 	}
 } else {
-	echo "Hallo\n";
+	mysql_connect(DB_HOST, DB_USER, DB_PASSWD) or die ('Could not connect: ' . mysql_error());
+	mysql_select_db(DB_NAME) or die('Could not select database: ' . mysql_error());
+	$query = "select id, v4address, updated, created from ipaddress where id = (SELECT max(id) FROM ipaddress)";
+	$result = mysql_query($query);
+	if ( $result ) {
+		$row = mysql_fetch_array($result, MYSQL_ASSOC);
+		mysql_free_result($result);
+		$last_id = $row['id'];
+		$last_v4address = $row['v4address'];
+		$updated = $row['updated'];
+		$created = $row['created'];
+?>
+		<table border="1">
+			<tr><th>DDNS address</th><th>Hostname</th><th>Created</th><th>Updated</th></tr>
+			<tr>
+<?php
+		echo "<td>".$last_v4address."</td><td>".gethostbyaddr($last_v4address)."</td><td>".$created."</td><td>".$updated."</td";
+?>
+			</tr>
+		</table>
+<?php
+	} else {
+		echo "<h1>Geen DDNS info beschikbaar</h1>";
+	}
 }
 ?>
+	</body>
+</html>
