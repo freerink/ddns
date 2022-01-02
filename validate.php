@@ -46,11 +46,4 @@ function validateToken($aud, $token) {
 	return true;
 }
 
-//print_r($_SERVER); 
-$parts = explode(" ", $_SERVER['HTTP_AUTHORIZATION']);
-//echo "parts[0]: ".$parts[0]."\n";
-//echo "parts[1]: ".$parts[1]."\n";
-$valid = validateToken("write:ddns", $parts[1]);
-echo "Token valid: ".($valid?"true":"false")."\n";
-
 ?>

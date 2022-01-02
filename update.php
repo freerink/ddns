@@ -11,16 +11,27 @@ function myLogRequest() {
 myLogRequest();
 
 if( ! isset($_SERVER['HTTP_AUTHORIZATION']) ) {
+	echo "Missing authorization header\n";
 	http_response_code(403);
 } else {
 	$authParts = explode(" ", $_SERVER['HTTP_AUTHORIZATION']);
-	
-	$statusList = json_encode([
-			["validtoken" => validateToken("write:ddns", $authParts[1])],
-			["timestamp" => 2132131, "status" => "OK"],
-			["timestamp" => 2132132, "status" => "OK"],
-			["timestamp" => 2132133, "status" => "OK"]
-		], JSON_PRETTY_PRINT);
-	echo $statusList;
+	if( count($authParts) != 2 or $authParts[0] !== "Bearer" ) {
+		echo "Need bearer token authorization\n";
+		http_response_code(403);
+	} else {
+		$isTokenValid = validateToken("write:ddns", $authParts[1]);
+		if( ! $isTokenValid ) {
+			echo "Invalid token\n";
+			http_response_code(403);
+		} else {
+			$statusList = json_encode([
+					["validtoken" => validateToken("write:ddns", $authParts[1])],
+					["timestamp" => 2132131, "status" => "OK"],
+					["timestamp" => 2132132, "status" => "OK"],
+					["timestamp" => 2132133, "status" => "OK"]
+				], JSON_PRETTY_PRINT);
+			echo $statusList;
+		}
+	}
 }
 ?>
