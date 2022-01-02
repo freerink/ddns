@@ -15,7 +15,7 @@ if( ! isset($_SERVER['HTTP_AUTHORIZATION']) ) {
 	http_response_code(403);
 } else {
 	$authParts = explode(" ", $_SERVER['HTTP_AUTHORIZATION']);
-	if( count($authParts) != 2 or $authParts[0] !== "Bearer" ) {
+	if( count($authParts) != 2 || $authParts[0] !== "Bearer" ) {
 		echo "Need bearer token authorization\n";
 		http_response_code(403);
 	} else {
@@ -25,7 +25,7 @@ if( ! isset($_SERVER['HTTP_AUTHORIZATION']) ) {
 			http_response_code(403);
 		} else {
 			$statusList = json_encode([
-					["validtoken" => validateToken("write:ddns", $authParts[1])],
+					["validtoken" => $isTokenValid],
 					["timestamp" => 2132131, "status" => "OK"],
 					["timestamp" => 2132132, "status" => "OK"],
 					["timestamp" => 2132133, "status" => "OK"]
