@@ -13,27 +13,44 @@ function getSecret() {
 }
 
 function validateToken($aud, $token) {
+	//echo "In validateToken token:".$token."\n";
 	$tokenParts = explode('.', $token);
+	//echo "Count:".count($tokenParts)."\n";
+	//print_r($tokenParts);
 	// Check validity
-	$signature = hash_hmac('sha256', $tokenParts[0].".".$tokenParts[1], getSecret(), true);
-	if ( base64UrlEncode($signature) !== $tokenParts[2] ) {
+	$signature = hash_hmac('sha256', $tokenParts[0] . "." . $tokenParts[1], getSecret(), true);
+	$base64UrlSignature = base64UrlEncode($signature);
+	//echo "Received signature   : " . $tokenParts[2] . "\n";
+	//echo "Verify with signature: " . $base64UrlSignature . "\n";
+	if ( $base64UrlSignature !== $tokenParts[2] ) {
+		echo "Invalid signature\n";
 		return false;
 	}
-	$payload = json_decode(base64_decode($tokenParts[1]));
-	echo "PAYLOAD:".$payload;
+	//echo "Valid signature\n";
+	$payloadJson = base64_decode($tokenParts[1]);
+	//echo "JSON payload: ".$payloadJson."\n";
+	$payload = json_decode($payloadJson, true);
+	//echo "Payload: ".print_r($payload, true)."\n";
 	// Check expiration
-	if( gettimeofday()['sec'] > $payload->exp ) {
+	$now = gettimeofday()['sec'];
+	//echo "now: ".$now.", exp: ".$payload['exp']."\n";
+	if( $now > $payload['exp'] ) {
+		echo "Expired\n";
 		return false;
 	}
 	// Check audience
-	if( $aud !== $payload->aud ) {
+	if( $aud !== $payload['aud'] ) {
+		echo "Incorrect audience\n";
 		return false;
 	}
 	return true;
 }
 
+//print_r($_SERVER); 
 $parts = explode(" ", $_SERVER['HTTP_AUTHORIZATION']);
-echo "parts[1]: ".$parts[1]."\n";
-echo "ValidToken:".validateToken("write:ddns", parts[1])."\n";
+//echo "parts[0]: ".$parts[0]."\n";
+//echo "parts[1]: ".$parts[1]."\n";
+$valid = validateToken("write:ddns", $parts[1]);
+echo "Token valid: ".($valid?"true":"false")."\n";
 
 ?>
