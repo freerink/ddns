@@ -1,12 +1,26 @@
+<!DOCTYPE html> 
 <html>
 	<head>
 		<title>DDNS</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1"> 
+		<link rel="stylesheet" href="https://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.css" />
+		<script src="https://code.jquery.com/jquery-1.7.1.min.js"></script>
+		<script src="https://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.js"></script>
 	</head>
 	<body>
+		<div data-role="page">
+
+	<div data-role="header">
+		<h1>DDNS</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<p>Hello world</p>		
+
 <?php
 define("DB_USER", "2737ddns");
-define("DB_PASSWD", "dmjnw3ten");
-define("DB_HOST", "sql1.pcextreme.nl");
+define("DB_PASSWD", "ddnsdmjnw3tenddns");
+define("DB_HOST", "fragrant-tooth.2737ddns.dbinf.buildingtogether.io");
 define("DB_NAME", "2737ddns");
 
 if( isset($_GET['time']) && isset($_GET['hash']) ) {
@@ -56,31 +70,39 @@ if( isset($_GET['time']) && isset($_GET['hash']) ) {
 		echo "Not authorised\n";
 	}
 } else {
-	mysql_connect(DB_HOST, DB_USER, DB_PASSWD) or die ('Could not connect: ' . mysql_error());
-	mysql_select_db(DB_NAME) or die('Could not select database: ' . mysql_error());
-	$query = "select id, v4address, updated, created from ipaddress where id = (SELECT max(id) FROM ipaddress)";
-	$result = mysql_query($query);
-	if ( $result ) {
-		$row = mysql_fetch_array($result, MYSQL_ASSOC);
-		mysql_free_result($result);
-		$last_id = $row['id'];
-		$last_v4address = $row['v4address'];
-		$updated = $row['updated'];
-		$created = $row['created'];
+	echo "connect db";
+	$link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME) or die ('Could not connect to database: ' . mysql_error());
+	echo "connected to db";
+	$query = "select id, v4address, updated, created from ipaddress where id = (SELECT max(id) FROM ipaddress);";
+	if ( mysqli_multi_query($link, $query) ) {
+		echo "done query";
+		if( $result = mysqli_store_result($link) ) {
+			echo "in store result";
+			while( $row = mysqli_fetch_row($result) ) {
+				echo "in fetch row";
+				$last_id = $row[0];
+				$last_v4address = $row[1];
+				$updated = $row[2];
+				$created = $row[3];
+			}
+			mysqli_free_result($result);
+			echo "freed result";
+		}
 ?>
-		<table border="1">
-			<tr><th>DDNS address</th><th>Hostname</th><th>Created</th><th>Updated</th></tr>
-			<tr>
+		<div class="ui-grid-a">
+			<!--tr><th>DDNS address</th><th>Hostname</th><th>Created</th><th>Updated</th></tr>
+			<tr-->
 <?php
-		echo "<td>".$last_v4address."</td><td>".gethostbyaddr($last_v4address)."</td><td>".$created."</td><td>".$updated."</td";
+		echo "<div class='ui-bar-c'>".$last_v4address."</div><div class='ui-bar-b'>".gethostbyaddr($last_v4address)."</div><div class='ui-bar-c'>".$created."</div><div class='ui-bar-b'>".$updated."</div>";
 ?>
-			</tr>
-		</table>
+		</div>
 <?php
 	} else {
 		echo "<h1>Geen DDNS info beschikbaar</h1>";
 	}
 }
 ?>
+	</div><!-- /content -->
+</div><!-- /page -->
 	</body>
 </html>
